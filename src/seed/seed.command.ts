@@ -7,7 +7,7 @@ interface SeedCommandOptions {
 
 @Command({
   name: 'seed',
-  description: 'A parameter parse',
+  description: 'Generate X random documents',
   options: {
     isDefault: false,
   },
@@ -30,7 +30,7 @@ export class SeedCommand extends CommandRunner {
   }
 
   @Option({
-    flags: '-c, --count [number]',
+    flags: '-x, -c, --count [number]',
     description: 'A number of random documents',
   })
   parseCount(val: string): number {
