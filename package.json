@@ -8,6 +8,7 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start:cli": "ts-node ./src/cli.ts",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -25,6 +26,7 @@
     "@nestjs/mongoose": "^10.0.4",
     "@nestjs/platform-express": "^10.0.0",
     "mongoose": "^8.2.2",
+    "nest-commander": "^3.12.5",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1"
   },
