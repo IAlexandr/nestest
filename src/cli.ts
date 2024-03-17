@@ -1,8 +1,8 @@
 import { CommandFactory } from 'nest-commander';
-import { SeedModule } from './seed/seed.module';
+import { CommandsModule } from './commands/commands.module';
 
 async function bootstrap() {
-  await CommandFactory.run(SeedModule, {
+  await CommandFactory.run(CommandsModule, {
     logger: ['log', 'error', 'warn', 'debug'],
   });
 }

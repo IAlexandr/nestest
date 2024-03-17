@@ -1,5 +1,6 @@
 import { Command, CommandRunner, Option } from 'nest-commander';
 import { Logger } from '@nestjs/common';
+import { UserService } from '../user/user.service';
 
 interface SeedCommandOptions {
   count?: number;
@@ -15,7 +16,8 @@ interface SeedCommandOptions {
 export class SeedCommand extends CommandRunner {
   private logger: Logger;
 
-  constructor() {
+  constructor(private userService: UserService) {
+    // constructor() {
     super();
     this.logger = new Logger('commands');
   }
@@ -26,19 +28,21 @@ export class SeedCommand extends CommandRunner {
   ): Promise<void> {
     const count = options?.count || 10;
 
-    this.seed(count);
+    await this.seed(count);
   }
 
   @Option({
-    flags: '-x, -c, --count [number]',
+    flags: '--count [number]',
     description: 'A number of random documents',
   })
   parseCount(val: string): number {
     return Number(val);
   }
 
-  seed(count: number): void {
+  async seed(count: number): Promise<void> {
     this.logger.log(`seed count: ${count}`);
-    // TODO seed mongoose
+    // TODO
+    const r = await this.userService.addUser({ name: 'test' });
+    this.logger.log(r);
   }
 }
