@@ -3,7 +3,10 @@ import { Logger } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 
 function generateRandomString() {
-  return Math.random().toString(36).substring(2, 8);
+  return (
+    Math.random().toString(36).substring(2) +
+    Math.random().toString(36).substring(2)
+  );
 }
 
 interface SeedCommandOptions {

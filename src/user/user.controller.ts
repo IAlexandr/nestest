@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './user.entity';
 
@@ -7,8 +7,11 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  findAll(): Promise<User[]> {
-    return this.userService.findAll();
+  findAll(
+    @Query('limit') limit: number,
+    @Query('offset') offset: number,
+  ): Promise<User[]> {
+    return this.userService.findAll({ take: limit, skip: offset });
   }
 
   @Get(':name')

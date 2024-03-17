@@ -1,5 +1,10 @@
+const cluster = require('cluster');
+import * as os from 'os';
+
+import axios from 'axios';
 import { Command, CommandRunner, Option } from 'nest-commander';
 import { Logger } from '@nestjs/common';
+import { UserService } from '../user/user.service';
 
 interface LoadTestCommandOptions {
   index?: boolean;
@@ -15,7 +20,7 @@ interface LoadTestCommandOptions {
 export class LoadTestCommand extends CommandRunner {
   private logger: Logger;
 
-  constructor() {
+  constructor(private userService: UserService) {
     super();
     this.logger = new Logger('commands');
   }
@@ -24,7 +29,7 @@ export class LoadTestCommand extends CommandRunner {
     passedParam: string[],
     options?: LoadTestCommandOptions,
   ): Promise<void> {
-    this.loadTest(!!options?.index);
+    await this.loadTest(!!options?.index);
   }
 
   @Option({
@@ -35,8 +40,44 @@ export class LoadTestCommand extends CommandRunner {
     return true;
   }
 
-  loadTest(useIndex: boolean): void {
+  async loadTest(useIndex: boolean): Promise<void> {
     this.logger.log(`load test (useIndex: ${useIndex})`);
-    // TODO seed mongoose
+
+    if (useIndex) {
+      await this.userService.createIndex();
+    } else {
+      await this.userService.dropIndex();
+    }
+
+    if (cluster && cluster.isPrimary) {
+      const numCPUs = os.cpus().length;
+      for (let i = 0; i < numCPUs; i++) {
+        cluster.fork();
+      }
+
+      cluster.on('message', (worker, message) => {
+        this.logger.log(`${worker.id}: ${message}`);
+      });
+    } else {
+      let successCount = 0;
+      let errorCount = 0;
+      const users = await this.userService.findAll({
+        take: 10000,
+        skip: Math.floor(Math.random() * 100000),
+      });
+      for (const user of users) {
+        try {
+          await axios.get(`http://localhost:3000/users/${user.name}`);
+          successCount++;
+          successCount % 1000 === 0 &&
+            process.send('successCount: ' + successCount);
+        } catch (error) {
+          process.send(`Error for ${user.name}: ${error.message}`);
+          errorCount++;
+        }
+      }
+      this.logger.log(`successCount: ${successCount}`);
+      this.logger.log(`errorCount: ${errorCount}`);
+    }
   }
 }
