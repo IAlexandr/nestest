@@ -65,12 +65,16 @@ export class LoadTestCommand extends CommandRunner {
         take: 10000,
         skip: Math.floor(Math.random() * 100000),
       });
+      let startTime = process.hrtime();
       for (const user of users) {
         try {
           await axios.get(`http://localhost:3000/users/${user.name}`);
           successCount++;
-          successCount % 1000 === 0 &&
-            process.send('successCount: ' + successCount);
+          if (successCount % 100 === 0) {
+            const endTime = process.hrtime(startTime);
+            process.send(`successCount: ${successCount} (${endTime}ms)`);
+            startTime = process.hrtime();
+          }
         } catch (error) {
           process.send(`Error for ${user.name}: ${error.message}`);
           errorCount++;
@@ -78,6 +82,8 @@ export class LoadTestCommand extends CommandRunner {
       }
       this.logger.log(`successCount: ${successCount}`);
       this.logger.log(`errorCount: ${errorCount}`);
+
+      process.exit(0);
     }
   }
 }
