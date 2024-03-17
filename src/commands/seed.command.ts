@@ -2,6 +2,10 @@ import { Command, CommandRunner, Option } from 'nest-commander';
 import { Logger } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 
+function generateRandomString() {
+  return Math.random().toString(36).substring(2, 8);
+}
+
 interface SeedCommandOptions {
   count?: number;
 }
@@ -41,8 +45,12 @@ export class SeedCommand extends CommandRunner {
 
   async seed(count: number): Promise<void> {
     this.logger.log(`seed count: ${count}`);
-    // TODO
-    const r = await this.userService.addUser({ name: 'test' });
-    this.logger.log(r);
+    const usersToInsert = [];
+
+    for (let i = 0; i < count; i++) {
+      usersToInsert.push({ name: generateRandomString() });
+    }
+    const r = await this.userService.addBatchUsers(usersToInsert);
+    this.logger.log(`seed result insertedCount: ${r.insertedCount}`);
   }
 }
